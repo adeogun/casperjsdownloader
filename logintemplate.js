@@ -1,13 +1,14 @@
 var casper = require('casper').create();
+var config = require("config.json").configName;
 var loading = false;
 
 casper.start();
 //Set useragent
-casper.userAgent("Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0");
+casper.userAgent(config.userAgent);
 
 //Download resource if you know the URL
 casper.on('resource.received', function (resource) {
-    if (resource.url == "https://downloadfilelink.com") {
+    if (resource.url == config.sourceUrl) {
         var filename = "filename";
 		casper.download(resource.url, filename);
         //Display resource in json
@@ -31,18 +32,19 @@ casper.on('load.finished', function () {
 var actions = [
   function () {
       console.log("Opening login page");
-      casper.open("https://loginpage.com");
+      casper.open(config.loginPage);
   },
   //Enter login info
   function () {
       console.log("Entering Credentials");
-      casper.evaluate(function () {
+       casper.evaluate(function(username, password) {	
+			
+         var arr = document.getElementsByClassName("form");
+		
+		  arr[0].elements["username"].value = username;
+          arr[0].elements["password"].value = password;			
 
-          var arr = document.getElementsByClassName("formname");
-          arr[0].elements["username"].value = "yourusername";
-          arr[0].elements["password"].value = "yourpassword";
-
-      });
+        },config.username, config.password);
   },
   //Click login button
   function () {
@@ -56,10 +58,10 @@ var actions = [
   function () {
       //Download from a form that has no link by parsing form parameters
       console.log("Downloading CSV");
-      var res = casper.evaluate(function () {
+      var response = casper.evaluate(function () {
           var res = {};
           f = document.forms["form"];
-          //Click sbmit, get params then cancel submit action
+          //Click submit, get params then cancel submit action
           f.onsubmit = function () {
               var post = {};
               console.log("element size " + f.elements.length);
@@ -79,13 +81,13 @@ var actions = [
       //console.log(JSON.stringify(res.post));
 	   var filename = "filename";	
       //Use parameters to make post
-      casper.download(res.action, filename, "POST", res.post);
+      casper.download(response.action, filename, "POST", response.post);
   }
 ];
 
 var index = 0
 
-interval = setInterval(function () {
+setInterval(function () {
     //Move to the next step depending on load state
     if (!loading && typeof actions[index] == "function") {
         console.log("action " + (index + 1));

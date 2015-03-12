@@ -1,0 +1,9 @@
+{
+    "configName": {        
+        "sourceURL": "http://sourceurl.com",
+		"userAgent": "useragent",
+        "loginPage": "https://loginpage.com",
+        "username": "username",
+        "password": "password"		
+    }
+}
